@@ -17,7 +17,7 @@
             pingTimer = setInterval(sendPing, 30 * 1000, ws);
 
             hterm.defaultStorage = new lib.Storage.Local();
-            hterm.defaultStorage.clear();
+            // hterm.defaultStorage.clear();
 
             term = new hterm.Terminal();
 
