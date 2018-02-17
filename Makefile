@@ -51,20 +51,6 @@ targz:
 shasums:
 	cd ${OUTPUT_DIR}/dist; sha256sum * > ./SHA256SUMS
 
-build-docker-image:
-ifndef TAG
-	ERR = $(error TAG is undefined)
-	$(ERR)
-endif
-	docker build --no-cache -t gotty:${TAG} .
 
-push-docker-image:
-ifndef REGISTRY
-	ERR = $(error REGISTRY is undefined)
-	$(ERR)
-endif
-	docker tag gotty:${TAG} ${REGISTRY}/gotty:${TAG}
-	docker push ${REGISTRY}/gotty:${TAG}
-
-release: build-docker-image push-docker-image
-	echo "gotty:${TAG} is published"
+release:
+	ghr -c ${GIT_COMMIT} --delete --prerelease -u yudai -r gotty pre-release ${OUTPUT_DIR}/dist
