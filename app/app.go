@@ -80,10 +80,10 @@ type Options struct {
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 	Width               int                    `hcl:"width"`
 	Height              int                    `hcl:"height"`
-	WSOrigin            string                 `hcl:"ws_origin"`
+	WsOrigin            string                 `hcl:"ws_origin"`
 }
 
-var Version = "1.0.1"
+var Version = "1.0.1-p2"
 
 var DefaultOptions = Options{
 	Address:             "",
@@ -109,6 +109,7 @@ var DefaultOptions = Options{
 	Preferences:         HtermPrefernces{},
 	Width:               0,
 	Height:              0,
+	WsOrigin:            "",
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -120,10 +121,10 @@ func New(command []string, options *Options) (*App, error) {
 	connections := int64(0)
 
 	var originChecker func(r *http.Request) bool
-	if options.WSOrigin != "" {
-		matcher, err := regexp.Compile(options.WSOrigin)
+	if options.WsOrigin != "" {
+		matcher, err := regexp.Compile(options.WsOrigin)
 		if err != nil {
-			return nil, errors.New("failed to compile regular expression of Websocket Origin: " + options.WSOrigin)
+			return nil, errors.New("failed to compile regular expression of Websocket Origin: " + options.WsOrigin)
 		}
 		originChecker = func(r *http.Request) bool {
 			return matcher.MatchString(r.Header.Get("Origin"))
