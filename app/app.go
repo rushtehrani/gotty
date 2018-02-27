@@ -88,6 +88,7 @@ var DefaultOptions = Options{
 	Port:                "8080",
 	Path:                "",
 	PermitWrite:         false,
+	Path:                "",
 	EnableBasicAuth:     false,
 	Credential:          "",
 	EnableRandomUrl:     false,
