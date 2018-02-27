@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -79,6 +80,7 @@ type Options struct {
 	RawPreferences      map[string]interface{} `hcl:"preferences"`
 	Width               int                    `hcl:"width"`
 	Height              int                    `hcl:"height"`
+	WSOrigin            string                 `hcl:"ws_origin"`
 }
 
 var Version = "1.0.1"
@@ -117,6 +119,17 @@ func New(command []string, options *Options) (*App, error) {
 
 	connections := int64(0)
 
+	var originChecker func(r *http.Request) bool
+	if options.WSOrigin != "" {
+		matcher, err := regexp.Compile(options.WSOrigin)
+		if err != nil {
+			return nil, errors.New("failed to compile regular expression of Websocket Origin: " + options.WSOrigin)
+		}
+		originChecker = func(r *http.Request) bool {
+			return matcher.MatchString(r.Header.Get("Origin"))
+		}
+	}
+
 	return &App{
 		command: command,
 		options: options,
@@ -125,6 +138,7 @@ func New(command []string, options *Options) (*App, error) {
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			Subprotocols:    []string{"gotty"},
+			CheckOrigin:     originChecker,
 		},
 
 		titleTemplate: titleTemplate,
@@ -331,7 +345,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := app.upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("Failed to upgrade connection: " + err.Error())
+		log.Printf("origin check error: %s", r.Header.Get("Origin"))
 		return
 	}
 
