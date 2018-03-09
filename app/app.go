@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
@@ -81,6 +82,7 @@ type Options struct {
 	Width               int                    `hcl:"width"`
 	Height              int                    `hcl:"height"`
 	WsOrigin            string                 `hcl:"ws_origin"`
+	AuthProvider        string                 `hcl:"auth_provider"`
 }
 
 var Version = "1.0.1-p2"
@@ -110,6 +112,7 @@ var DefaultOptions = Options{
 	Width:               0,
 	Height:              0,
 	WsOrigin:            "",
+	AuthProvider:        "",
 }
 
 func New(command []string, options *Options) (*App, error) {
@@ -368,6 +371,41 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		log.Print("Failed to authenticate websocket connection")
 		conn.Close()
 		return
+	}
+	if app.options.AuthProvider != "" {
+		req, err := http.NewRequest(http.MethodHead, app.options.AuthProvider, &bytes.Buffer{})
+		if err != nil {
+			log.Print("AuthProvider returned an error")
+			conn.Close()
+			return
+		}
+
+		req.Header.Set("X-Original-URI", r.URL.RequestURI())
+
+		method := http.MethodGet
+		if app.options.PermitWrite {
+			method = http.MethodPost
+		}
+		req.Header.Set("X-Original-Method", method)
+
+		token := r.URL.Query().Get("id_token")
+		if token == "" {
+			cookie, err := r.Cookie("id_token")
+			if err == nil && cookie.Value != "" {
+				token = cookie.Value
+			}
+		}
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		res, err := client.Do(req)
+		if err != nil || res.StatusCode != http.StatusNoContent {
+			log.Print("Failed to authenticate websocket connection")
+			conn.Close()
+			return
+		}
 	}
 	argv := app.command[1:]
 	if app.options.PermitArguments {

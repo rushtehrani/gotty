@@ -42,6 +42,7 @@ func main() {
 		flag{"width", "", "Static width of the screen, 0(default) means dynamically resize"},
 		flag{"height", "", "Static height of the screen, 0(default) means dynamically resize"},
 		flag{"ws-origin", "", "A regular expression that matches origin URLs to be accepted by WebSocket. No cross origin requests are acceptable by default"},
+		flag{"auth-provider", "", "External auth provider"},
 	}
 
 	mappingHint := map[string]string{
