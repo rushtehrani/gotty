@@ -401,7 +401,11 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{Timeout: 5 * time.Second}
 		res, err := client.Do(req)
 		if err != nil || res.StatusCode != http.StatusNoContent {
-			log.Printf("Failed to authenticate websocket connection:\n Error %v\n Status: %v\n", err.Error(), res.StatusCode)
+			log.Printf("Failed to authenticate websocket connection:\n")
+			if err != nil {
+				log.Printf("Error: %v\n", err.Error())
+			}
+			log.Printf("Status: %v\n", res.StatusCode)
 			conn.Close()
 			return
 		}
