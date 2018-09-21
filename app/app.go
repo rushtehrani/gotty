@@ -380,7 +380,7 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		req.Header.Set("X-Original-URI", r.URL.RequestURI())
+		req.Header.Set("X-Original-URI", app.options.Path)
 
 		method := http.MethodGet
 		if app.options.PermitWrite {
@@ -394,15 +394,14 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			if err == nil && cookie.Value != "" {
 				token = cookie.Value
 			}
-		}
-		if token != "" {
+		} else {
 			req.Header.Set("Authorization", "Bearer "+token)
 		}
 
 		client := &http.Client{Timeout: 5 * time.Second}
 		res, err := client.Do(req)
 		if err != nil || res.StatusCode != http.StatusNoContent {
-			log.Print("Failed to authenticate websocket connection")
+			log.Printf("Failed to authenticate websocket connection:\n Error %v\n Status: %v\n", err.Error(), res.StatusCode)
 			conn.Close()
 			return
 		}

@@ -191,3 +191,18 @@ GoTTY uses [hterm](https://groups.google.com/a/chromium.org/forum/#!forum/chromi
 # License
 
 The MIT License
+
+# Onepanel Specific
+
+```
+--auth-provider
+--ws-origin
+```
+
+## Additional Options
+
+## Testing
+
+```bash
+go run main.go flags.go help.go --path=/rushtehrani/projects/examples/jobs/2/logs --ws-origin '[all]|' --auth-provider=https://c.onepanel.io/api/instances/is_accessible tail -F
+```
