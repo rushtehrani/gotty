@@ -394,7 +394,8 @@ func (app *App) handleWS(w http.ResponseWriter, r *http.Request) {
 			if err == nil && cookie.Value != "" {
 				token = cookie.Value
 			}
-		} else {
+		}
+		if token != "" {
 			req.Header.Set("Authorization", "Bearer "+token)
 		}
 
